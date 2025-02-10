@@ -1,9 +1,12 @@
 services:
-  sveltekit:
+  net-metrics:
+    container_name: net-metrics
     build: .
-    ports:
-      - "3000:3000"
     environment:
       - NODE_ENV=production
+      - PORT=${PORT}
+      - SERVER_ID=${SERVER_ID}
     volumes:
       - ./db:/app/db
+    network_mode: host
+    restart: always

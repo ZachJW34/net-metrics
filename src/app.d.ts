@@ -18,6 +18,14 @@ declare global {
 		interface Global {
 			db: NetMetricsDatabase;
 		}
+
+		interface ProcessEnv {
+			DB_FILE: string | undefined;
+			LOG_LEVEL: 'info' | 'debug' | undefined;
+			SPEED_TEST_INTERVAL: string | undefined;
+			PORT: string | undefined;
+			SERVER_ID: string | undefined;
+		}
 	}
 
 	// eslint-disable-next-line no-var

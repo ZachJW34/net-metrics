@@ -12,7 +12,7 @@
 			header: 'Date',
 			cell(props) {
 				const date = new Date(props.row.original.timestamp);
-				const formattedDate = date.toLocaleString('en-GB', {
+				const formattedDate = date.toLocaleString(navigator.language || 'en-US', {
 					year: '2-digit',
 					month: '2-digit',
 					day: '2-digit',
@@ -33,6 +33,11 @@
 			id: 'upload',
 			header: () => createHeaderWithSubtitle('Upload', '(Mbps)'),
 			accessorFn: (row) => formatMbps(row.upload_bandwidth, { precision: 0 })
+		},
+		{
+			id: 'ping',
+			header: () => createHeaderWithSubtitle('Ping', '(ms)'),
+			accessorFn: (row) => row.ping_latency.toFixed(0)
 		},
 		{
 			id: 'jitter',

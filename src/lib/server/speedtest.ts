@@ -1,10 +1,11 @@
-import type { SpeedTestMetrics } from '$lib/types';
+import { SpeedTestMetricsSchema, type SpeedTestMetrics } from '$lib/types';
 import { Database, Statement } from 'bun:sqlite';
 import { logger } from './logger';
 import type { NetMetricsDatabase } from './db';
 // import { setIntervalImmediate } from './utils';
 
-const ONE_HOUR = 1000 * 60 * 60;
+const ONE_MINUTE = 1000 * 60;
+const ONE_HOUR = ONE_MINUTE * 60;
 
 export type SqlSpeedTestMetrics = ReturnType<typeof metricToSqlMetric>;
 
@@ -42,7 +43,11 @@ export class SpeedTestTable {
 
 	insertSpeedTestMetric(metric: SpeedTestMetrics) {
 		const metric_mapped = metricToSqlMetric(metric);
-		this.#insertMetricStatement.run(metric_mapped);
+		try {
+			this.#insertMetricStatement.run(metric_mapped);
+		} catch (e) {
+			logger.error(e, 'Failed to insert into speed_table');
+		}
 	}
 
 	loadSpeedTestMetrics(): SqlSpeedTestMetrics[] {
@@ -101,30 +106,53 @@ export class SpeedTestTable {
 	}
 }
 
-export async function runSpeedTest(): Promise<SpeedTestMetrics | undefined> {
-	try {
-		logger().debug('Executing speed test...');
-		const speedTestProcess = Bun.spawn({
-			cmd: ['speedtest', '--accept-license', '--format', 'json'],
-			stdout: 'pipe'
-		});
-		const metricsRaw = await Bun.readableStreamToText(speedTestProcess.stdout);
-		const metrics: SpeedTestMetrics = JSON.parse(metricsRaw);
+export async function tryRunSpeedTest(retries: number = 0) {
+	let runCount = Math.max(retries + 1, 1);
 
-		logger().debug(`Speed Test Results: ${JSON.stringify(metrics)}`);
-		return metrics;
-	} catch (e) {
-		console.error('Failed to run speedtest', e);
+	for (let i = 0; i < runCount; i++) {
+		try {
+			const metrics = await runSpeedTest();
+			return metrics;
+		} catch (e) {
+			logger.error(
+				`[speedtest] (Attempt ${i + 1}/${runCount}) Failed to run speed test with error ${e}`
+			);
+			continue;
+		}
 	}
+
+	logger.info('[speedtest] Failed to record net metrics.');
 }
 
-export function startSpeedTestInterval(db: NetMetricsDatabase) {
+async function runSpeedTest(): Promise<SpeedTestMetrics> {
+	const serverId = process.env.SERVER_ID;
+	const args = ['speedtest', '--accept-license', '--format', 'json'];
+	if (serverId) {
+		args.push('-s', serverId);
+	}
+	logger.debug(`[speedtest] Executing "${args.join(' ')}"...`);
+	const speedTestProcess = Bun.spawn({
+		cmd: ['speedtest', '--accept-license', '--format', 'json'],
+		stdout: 'pipe'
+	});
+	const metricsRaw = await Bun.readableStreamToText(speedTestProcess.stdout);
+	logger.debug(`[speedtest] Speed Test Results (Raw): ${metricsRaw}`);
+	return SpeedTestMetricsSchema.parse(JSON.parse(metricsRaw));
+}
+
+export function startSpeedTestInterval(db: NetMetricsDatabase, interval: number) {
+	let safeInterval = !interval ? ONE_HOUR : Math.max(interval, ONE_MINUTE);
+	logger.debug(`[speedtest] Speed Test Interval=${safeInterval}`);
+	let count = 0;
+
 	setInterval(async () => {
-		const metrics = await runSpeedTest();
+		count++;
+		logger.debug(`[speedtest] Speed Test Interval running (${count})...`);
+		const metrics = await tryRunSpeedTest(2);
 		if (metrics) {
 			db.speedTestTable.insertSpeedTestMetric(metrics);
 		}
-	}, ONE_HOUR);
+	}, safeInterval);
 }
 
 function metricToSqlMetric(metric: SpeedTestMetrics) {

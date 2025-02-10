@@ -9,6 +9,7 @@
         "express": "^5.0.1",
         "pino": "^9.6.0",
         "svelte-ux": "^0.90.0",
+        "zod": "^3.24.1",
       },
       "devDependencies": {
         "@eslint/compat": "^1.2.5",

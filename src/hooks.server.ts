@@ -9,9 +9,6 @@ export const init: ServerInit = async () => {
 };
 
 export const handle: Handle = async ({ event, resolve }) => {
-	// Set the db as our events.db variable.
 	event.locals.DB = global.DB;
-
-	const resp = await resolve(event);
-	return resp;
+	return resolve(event);
 };

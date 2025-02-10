@@ -1,9 +1,9 @@
 // import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { runSpeedTest } from '$lib/server/speedtest';
+import { tryRunSpeedTest } from '$lib/server/speedtest';
 
 export const GET: RequestHandler = ({ locals: { DB } }) => {
-	runSpeedTest().then((res) => {
+	tryRunSpeedTest().then((res) => {
 		if (res) {
 			DB.speedTestTable.insertSpeedTestMetric(res);
 		}
