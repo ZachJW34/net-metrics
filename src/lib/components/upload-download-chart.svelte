@@ -46,10 +46,6 @@
 						time: {
 							unit: 'day'
 							// tooltipFormat: 'yyyy-MM-dd HH:mm:ss'
-						},
-						title: {
-							display: true,
-							text: 'Time'
 						}
 					}
 				}
