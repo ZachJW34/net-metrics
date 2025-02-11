@@ -12,7 +12,7 @@
 	}
 </script>
 
-<div class="p-4">
+<div class="flex flex-col gap-2 p-2">
 	<button onclick={runSpeedTest}>Run speed test</button>
 	<UploadDownloadChart metrics={data.metrics} />
 	<SpeedTestTable metrics={data.metrics} />

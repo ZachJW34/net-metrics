@@ -33,6 +33,13 @@
 			options: {
 				responsive: true,
 				maintainAspectRatio: false,
+				plugins: {
+					title: {
+						display: true,
+						text: 'Download/Upload (Mbps)',
+						color: 'white'
+					}
+				},
 				scales: {
 					x: {
 						type: 'time',
@@ -44,8 +51,7 @@
 							display: true,
 							text: 'Time'
 						}
-					},
-					y: { title: { display: true, text: 'Speed (Mbps)' } }
+					}
 				}
 			}
 		});
@@ -56,6 +62,6 @@
 	});
 </script>
 
-<div class="h-96 w-full">
+<div class="h-96 w-full rounded-md border p-2">
 	<canvas bind:this={canvasEl}> </canvas>
 </div>

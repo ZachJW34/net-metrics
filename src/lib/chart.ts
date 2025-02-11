@@ -6,7 +6,8 @@ import {
 	LineElement,
 	PointElement,
 	Filler,
-	TimeScale
+	TimeScale,
+	Title
 } from 'chart.js';
 import 'chartjs-adapter-date-fns';
 
@@ -17,5 +18,6 @@ Chart.register(
 	LineElement,
 	Filler,
 	CategoryScale,
-	TimeScale
+	TimeScale,
+	Title
 );
