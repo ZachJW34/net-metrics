@@ -2,27 +2,15 @@
 	import type { ColumnDef } from '@tanstack/table-core';
 	import DataTable, { createHeaderWithSubtitle } from './ui/data-table';
 	import { type SqlSpeedTestMetrics } from '$lib/server/speedtest';
-	import { formatMbps } from '$lib/utils';
+	import { formatMbps, formatTimestamp } from '$lib/utils';
 
-	let { data }: { data: SqlSpeedTestMetrics[] } = $props();
+	let { metrics }: { metrics: SqlSpeedTestMetrics[] } = $props();
 
 	const columns: ColumnDef<SqlSpeedTestMetrics>[] = [
 		{
 			accessorKey: 'timestamp',
 			header: 'Date',
-			cell(props) {
-				const date = new Date(props.row.original.timestamp);
-				const formattedDate = date.toLocaleString(navigator.language || 'en-US', {
-					year: '2-digit',
-					month: '2-digit',
-					day: '2-digit',
-					hour: '2-digit',
-					minute: '2-digit',
-					hour12: false
-				});
-
-				return formattedDate;
-			}
+			cell: (props) => formatTimestamp(props.row.original.timestamp)
 		},
 		{
 			id: 'download',
@@ -52,4 +40,4 @@
 	];
 </script>
 
-<DataTable {data} {columns}></DataTable>
+<DataTable data={metrics} {columns}></DataTable>

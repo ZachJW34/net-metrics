@@ -107,7 +107,7 @@ export class SpeedTestTable {
 }
 
 export async function tryRunSpeedTest(retries: number = 0) {
-	let runCount = Math.max(retries + 1, 1);
+	const runCount = Math.max(retries + 1, 1);
 
 	for (let i = 0; i < runCount; i++) {
 		try {
@@ -141,7 +141,7 @@ async function runSpeedTest(): Promise<SpeedTestMetrics> {
 }
 
 export function startSpeedTestInterval(db: NetMetricsDatabase, interval: number) {
-	let safeInterval = !interval ? ONE_HOUR : Math.max(interval, ONE_MINUTE);
+	const safeInterval = !interval ? ONE_HOUR : Math.max(interval, ONE_MINUTE);
 	logger.debug(`[speedtest] Speed Test Interval=${safeInterval}`);
 	let count = 0;
 

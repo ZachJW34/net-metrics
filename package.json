@@ -46,6 +46,9 @@
 	"dependencies": {
 		"@tanstack/table-core": "^8.20.5",
 		"bytes": "^3.1.2",
+		"chart.js": "^4.4.7",
+		"chartjs-adapter-date-fns": "^3.0.0",
+		"date-fns": "^4.1.0",
 		"express": "^5.0.1",
 		"pino": "^9.6.0",
 		"svelte-ux": "^0.90.0",
