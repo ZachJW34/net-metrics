@@ -8,11 +8,6 @@
 
 	const columns: ColumnDef<SqlSpeedTestMetrics>[] = [
 		{
-			accessorKey: 'timestamp',
-			header: 'Date',
-			cell: (props) => formatTimestamp(props.row.original.timestamp)
-		},
-		{
 			id: 'download',
 			header: () => createHeaderWithSubtitle('Download', '(Mbps)'),
 			accessorFn: (row) => formatMbps(row.download_bandwidth, { precision: 0 })
@@ -36,6 +31,14 @@
 			id: 'loss',
 			header: () => createHeaderWithSubtitle('Loss', '(%)'),
 			accessorFn: (row) => row.packet_loss.toFixed(1)
+		},
+		{
+			header: 'Date',
+			cell: (props) => formatTimestamp(props.row.original.timestamp)
+		},
+		{
+			accessorKey: 'server_name',
+			header: 'Server'
 		}
 	];
 </script>

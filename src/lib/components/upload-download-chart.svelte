@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { SqlSpeedTestMetrics } from '$lib/server/speedtest';
-	import { bytesToMegaBits, formatTimestamp } from '$lib/utils';
+	import { bytesToMegaBits } from '$lib/utils';
 	import { Chart } from 'chart.js';
 	import { onDestroy, onMount } from 'svelte';
 
@@ -45,7 +45,6 @@
 						type: 'time',
 						time: {
 							unit: 'day'
-							// tooltipFormat: 'yyyy-MM-dd HH:mm:ss'
 						}
 					}
 				}
