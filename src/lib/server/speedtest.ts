@@ -126,13 +126,13 @@ export async function tryRunSpeedTest(retries: number = 0) {
 
 async function runSpeedTest(): Promise<SpeedTestMetrics> {
 	const serverId = process.env.SERVER_ID;
-	const args = ['speedtest', '--accept-license', '--format', 'json'];
+	const cmd = ['speedtest', '--accept-license', '--format', 'json'];
 	if (serverId) {
-		args.push('-s', serverId);
+		cmd.push('-s', serverId);
 	}
-	logger.debug(`[speedtest] Executing "${args.join(' ')}"...`);
+	logger.debug(`[speedtest] Executing "${cmd.join(' ')}"...`);
 	const speedTestProcess = Bun.spawn({
-		cmd: ['speedtest', '--accept-license', '--format', 'json'],
+		cmd,
 		stdout: 'pipe'
 	});
 	const metricsRaw = await Bun.readableStreamToText(speedTestProcess.stdout);
