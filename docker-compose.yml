@@ -6,6 +6,7 @@ services:
       - NODE_ENV=production
       - PORT=${PORT}
       - SERVER_ID=${SERVER_ID}
+      - PUBLIC_WEBSOCKET_PORT=${PUBLIC_WEBSOCKET_PORT}
     volumes:
       - ./db:/app/db
     network_mode: host
