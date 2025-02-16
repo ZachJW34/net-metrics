@@ -4,16 +4,16 @@ import { init } from './lib/server/init';
 
 const PORT = process.env.PORT || 3000;
 
-global.DB = init().db;
+async function main() {
+	await init();
 
-const app = express();
+	const app = express();
 
-app.use(handler);
+	app.use(handler);
 
-app.listen(PORT, () => {
-	console.log(`http://localhost:${PORT}`);
-});
+	app.listen(PORT, () => {
+		console.log(`http://localhost:${PORT}`);
+	});
+}
 
-process.on('exit', () => {
-	global.DB.close();
-});
+main();

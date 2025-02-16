@@ -51,6 +51,7 @@
 		"date-fns": "^4.1.0",
 		"express": "^5.0.1",
 		"pino": "^9.6.0",
+		"svelte-gauge": "^2.0.0",
 		"svelte-ux": "^0.90.0",
 		"zod": "^3.24.1"
 	}

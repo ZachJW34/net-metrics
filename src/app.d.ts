@@ -15,8 +15,9 @@ declare global {
 	}
 
 	namespace NodeJS {
-		interface Global {
-			db: NetMetricsDatabase;
+		interface GlobalThis {
+			__NET_METRICS_DB: NetMetricsDatabase;
+			__NET_METRICS_BUN_SERVER: ReturnType<typeof Bun.serve>;
 		}
 
 		interface ProcessEnv {
@@ -24,12 +25,15 @@ declare global {
 			LOG_LEVEL: 'info' | 'debug' | undefined;
 			SPEED_TEST_INTERVAL: string | undefined;
 			PORT: string | undefined;
+			PUBLIC_WEBSOCKER_PORT: string | undefined;
 			SERVER_ID: string | undefined;
 		}
 	}
 
 	// eslint-disable-next-line no-var
-	var DB: NetMetricsDatabase;
+	var __NET_METRICS_DB: NetMetricsDatabase;
+	// eslint-disable-next-line no-var
+	var __NET_METRICS_BUN_SERVER: ReturnType<typeof Bun.serve>;
 }
 
 export {};

@@ -1,4 +1,9 @@
-import { SpeedTestMetricsSchema, type SpeedTestMetrics } from '$lib/types';
+import {
+	LiveSpeedTestSchema,
+	TestEndSchema,
+	type SpeedTestMetrics,
+	type TypedServerWs
+} from '$lib/types';
 import { Database, Statement } from 'bun:sqlite';
 import { logger } from './logger';
 import type { NetMetricsDatabase } from './db';
@@ -51,7 +56,9 @@ export class SpeedTestTable {
 	}
 
 	loadSpeedTestMetrics(): SqlSpeedTestMetrics[] {
-		return this.#db.query('SELECT * from speed_test').all() as SqlSpeedTestMetrics[];
+		return this.#db
+			.query('SELECT * from speed_test ORDER BY timestamp DESC')
+			.all() as SqlSpeedTestMetrics[];
 	}
 
 	#createTable() {
@@ -137,7 +144,49 @@ async function runSpeedTest(): Promise<SpeedTestMetrics> {
 	});
 	const metricsRaw = await Bun.readableStreamToText(speedTestProcess.stdout);
 	logger.debug(`[speedtest] Speed Test Results (Raw): ${metricsRaw}`);
-	return SpeedTestMetricsSchema.parse(JSON.parse(metricsRaw));
+	return TestEndSchema.parse(JSON.parse(metricsRaw));
+}
+
+export async function runLiveSpeedTest(ws: TypedServerWs): Promise<SpeedTestMetrics | null> {
+	const serverId = process.env.SERVER_ID;
+	const cmd = ['speedtest', '--accept-license', '--format', 'json', '--progress', 'yes'];
+	if (serverId) {
+		cmd.push('-s', serverId);
+	}
+	logger.debug(`[speedtest] Executing "${cmd.join(' ')}"...`);
+
+	const liveSpeedTestProcess = Bun.spawn({
+		cmd,
+		stdout: 'pipe'
+	});
+
+	const reader = liveSpeedTestProcess.stdout.getReader();
+
+	while (true) {
+		const { done, value } = await reader.read();
+
+		if (value) {
+			const text = Buffer.from(value).toString('utf-8');
+			try {
+				const payload = LiveSpeedTestSchema.parse(JSON.parse(text));
+				ws.send(payload);
+
+				if (payload.type === 'result') {
+					return payload;
+				}
+			} catch (err) {
+				logger.error(`Failed to parse LiveTestData: ${err}`);
+				ws.send({ type: 'error', message: String(err) });
+				break;
+			}
+		}
+
+		if (done) {
+			break;
+		}
+	}
+
+	return null;
 }
 
 export function startSpeedTestInterval(db: NetMetricsDatabase, interval: number) {
