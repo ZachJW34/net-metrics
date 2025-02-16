@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { PUBLIC_WEBSOCKET_PORT } from '$env/static/public';
+	import { env } from '$env/dynamic/public';
 	import {
 		wrapClientWs,
 		type Download,
@@ -26,7 +26,7 @@
 	function runSpeedTest() {
 		testState = { stage: 'waiting' };
 		const { protocol, hostname } = window.location;
-		const wsURL = `${protocol === 'http:' ? 'ws' : 'wss'}://${hostname}:${PUBLIC_WEBSOCKET_PORT || 5174}/ws`;
+		const wsURL = `${protocol === 'http:' ? 'ws' : 'wss'}://${hostname}:${env.PUBLIC_WEBSOCKET_PORT || 5174}/ws`;
 
 		const ws = wrapClientWs(new WebSocket(wsURL));
 
