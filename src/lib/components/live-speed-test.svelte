@@ -11,7 +11,7 @@
 	} from '$lib/types';
 	import { bytesToMegaBits } from '$lib/utils';
 	import Gauge from 'svelte-gauge';
-	import { cubicIn, cubicOut } from 'svelte/easing';
+	import { cubicOut } from 'svelte/easing';
 
 	let testState = $state<{
 		testStart?: TestStart;
@@ -19,9 +19,33 @@
 		download?: Download['download'];
 		upload?: Upload['upload'];
 		result?: SpeedTestMetrics;
-		stage: LiveSpeedTest['type'] | 'none' | 'waiting';
+		stage: LiveSpeedTest['type'] | 'none' | 'waiting' | 'error';
 	}>({ stage: 'none' });
 	let testIsRunning = $derived(testState.stage !== 'none' && testState.stage !== 'result');
+	let gaugeFormat = $derived.by(() => {
+		const PLACEHOLDER = '--';
+		const download = bytesToMegaBits(testState.download?.bandwidth ?? 0);
+		const upload = bytesToMegaBits(testState.upload?.bandwidth ?? 0);
+
+		return {
+			download: {
+				raw: download,
+				formatted: testState.download ? `${Math.round(download)} Mbps` : PLACEHOLDER
+			},
+			upload: {
+				raw: upload,
+				formatted: testState.upload ? `${Math.round(upload)} Mbps` : PLACEHOLDER
+			},
+			ping: {
+				raw: testState.ping?.latency,
+				formatted: testState.ping ? `${testState.ping.latency.toFixed(0)} ms` : PLACEHOLDER
+			},
+			loss: {
+				raw: testState.result?.packetLoss,
+				formatted: testState.result ? `${testState.result.packetLoss.toFixed(1)} %` : PLACEHOLDER
+			}
+		};
+	});
 
 	function runSpeedTest() {
 		testState = { stage: 'waiting' };
@@ -35,7 +59,6 @@
 		});
 
 		ws.addMessageListener((payload) => {
-			console.log({ payload });
 			switch (payload.type) {
 				case 'testStart': {
 					testState.stage = payload.type;
@@ -67,6 +90,8 @@
 					break;
 				}
 				case 'error': {
+					console.log('Error: ', payload);
+					testState.stage = payload.type;
 					ws.close();
 					break;
 				}
@@ -83,19 +108,21 @@
 	{#if testState.stage !== 'none'}
 		{#if testState.stage === 'waiting'}
 			Loading...
+		{:else if testState.stage === 'error'}
+			Error
 		{:else}
-			<Gauge
-				width={300}
-				stop={1000}
-				labels={generateTitles(100, 11)}
-				startAngle={45}
-				stopAngle={315}
-				stroke={10}
-				easing={cubicOut}
-				value={bytesToMegaBits(testState.download?.bandwidth ?? 0)}
-				color={'#3480eb'}
-			>
-				{#snippet children({ value: download })}
+			<div class="relative">
+				<Gauge
+					width={300}
+					stop={1000}
+					labels={generateTitles(100, 11)}
+					startAngle={45}
+					stopAngle={315}
+					stroke={10}
+					easing={cubicOut}
+					value={gaugeFormat.download.raw}
+					color={'#3480eb'}
+				>
 					<Gauge
 						stop={1000}
 						startAngle={45}
@@ -103,19 +130,42 @@
 						stroke={10}
 						easing={cubicOut}
 						color={'#34eb71'}
-						value={bytesToMegaBits(testState.upload?.bandwidth ?? 0)}
+						value={gaugeFormat.upload.raw}
 					>
-						{#snippet children({ value: upload })}
-							<div class="gauge-content">
-								<span>{Math.round(download)} Mbps ↓</span>
-								<span>{Math.round(upload)} Mbps ↑</span>
-								<span>Ping: {testState.ping?.latency.toFixed(0)} ms</span>
-								<span>Loss: {testState.result?.packetLoss.toFixed(0)} %</span>
-							</div>
-						{/snippet}
+						<div class="gauge-content flex flex-col items-start">
+							<span
+								><span class="inline-block w-16 text-left">Ping</span>{gaugeFormat.ping
+									.formatted}</span
+							>
+							<span class={{ 'animate-pulse': testState.stage === 'download' }}
+								><span class="inline-block w-16 text-left">↓</span>{gaugeFormat.download
+									.formatted}</span
+							>
+							<span class={{ 'animate-pulse': testState.stage === 'upload' }}
+								><span class="inline-block w-16 text-left">↑</span>{gaugeFormat.upload
+									.formatted}</span
+							>
+							<span
+								><span class="inline-block w-16 text-left">Loss</span>{gaugeFormat.loss
+									.formatted}</span
+							>
+						</div>
 					</Gauge>
-				{/snippet}
-			</Gauge>
+				</Gauge>
+				<div class="progress-gauge absolute top-0">
+					<Gauge
+						width={255}
+						stop={1}
+						startAngle={35}
+						stopAngle={-35}
+						stroke={10}
+						value={testState.upload?.progress || testState.download?.progress}
+						color={'#808080'}
+					>
+						<span></span>
+					</Gauge>
+				</div>
+			</div>
 		{/if}
 	{/if}
 </div>
@@ -131,5 +181,11 @@
 		span {
 			white-space: nowrap;
 		}
+	}
+
+	.progress-gauge {
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
 	}
 </style>

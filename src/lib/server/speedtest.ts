@@ -168,17 +168,25 @@ export async function runLiveSpeedTest(ws: TypedServerWs): Promise<SpeedTestMetr
 		if (value) {
 			const text = Buffer.from(value).toString('utf-8');
 			logger.debug(`[live-speedtest] value=${text}`);
-			try {
-				const payload = LiveSpeedTestSchema.parse(JSON.parse(text));
-				ws.send(payload);
+			const split = text.split('\n').filter(Boolean);
+			for (const line of split) {
+				try {
+					const json = JSON.parse(line);
+					if (json.type === 'log' || json.type === 'error') {
+						logger.debug('[live-speedtest] TODO handle log and error types');
+						continue;
+					}
+					const payload = LiveSpeedTestSchema.parse(json);
+					ws.send(payload);
 
-				if (payload.type === 'result') {
-					return payload;
+					if (payload.type === 'result') {
+						return payload;
+					}
+				} catch (err) {
+					logger.error(`Failed to parse LiveTestData: ${err}`);
+					ws.send({ type: 'error', message: String(err) });
+					break;
 				}
-			} catch (err) {
-				logger.error(`Failed to parse LiveTestData: ${err}`);
-				ws.send({ type: 'error', message: String(err) });
-				break;
 			}
 		}
 
