@@ -4,6 +4,21 @@ import { logger } from './logger';
 import { startSpeedTestInterval } from './speedtest';
 
 export async function init(): Promise<void> {
+	logger.debug(
+		`Envs: ${JSON.stringify(
+			{
+				DB_FILE: process.env.DB_FILE,
+				LOG_LEVEL: process.env.LOG_LEVEL,
+				SPEED_TEST_INTERVAL: process.env.SPEED_TEST_INTERVAL,
+				PORT: process.env.PORT,
+				PUBLIC_WEBSOCKET_PORT: process.env.PUBLIC_WEBSOCKET_PORT,
+				SERVER_ID: process.env.SERVER_ID
+			},
+			null,
+			2
+		)}`
+	);
+
 	if (global.__NET_METRICS_DB && global.__NET_METRICS_BUN_SERVER) {
 		console.log('Cleaning up globals..');
 		global.__NET_METRICS_DB.close();

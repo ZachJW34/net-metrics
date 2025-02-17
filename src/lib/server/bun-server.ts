@@ -4,6 +4,7 @@ import { logger } from './logger';
 import { runLiveSpeedTest } from './speedtest';
 
 export function initBunServer(db: NetMetricsDatabase) {
+	const port = process.env.PUBLIC_WEBSOCKET_PORT || 5174;
 	let liveSpeedTestIsRunning = false;
 	const bunServer = Bun.serve({
 		async fetch(req, server) {
@@ -42,8 +43,10 @@ export function initBunServer(db: NetMetricsDatabase) {
 				}
 			}
 		},
-		port: process.env.PUBLIC_WEBSOCKER_PORT || 5174
+		port
 	});
+
+	logger.debug(`Bun server running on http://localhost:${port}`);
 
 	return bunServer;
 }

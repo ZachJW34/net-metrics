@@ -167,6 +167,7 @@ export async function runLiveSpeedTest(ws: TypedServerWs): Promise<SpeedTestMetr
 
 		if (value) {
 			const text = Buffer.from(value).toString('utf-8');
+			logger.debug(`[live-speedtest] value=${text}`);
 			try {
 				const payload = LiveSpeedTestSchema.parse(JSON.parse(text));
 				ws.send(payload);

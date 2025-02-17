@@ -25,7 +25,7 @@ declare global {
 			LOG_LEVEL: 'info' | 'debug' | undefined;
 			SPEED_TEST_INTERVAL: string | undefined;
 			PORT: string | undefined;
-			PUBLIC_WEBSOCKER_PORT: string | undefined;
+			PUBLIC_WEBSOCKET_PORT: string | undefined;
 			SERVER_ID: string | undefined;
 		}
 	}
